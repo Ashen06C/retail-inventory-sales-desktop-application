@@ -1,0 +1,121 @@
+<UserControl x:Class="RetailApp.Views.ProductView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1000"
+             Background="#F8FAFC">
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Page Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="Product Master Management" FontSize="22" FontWeight="Bold" Foreground="#0D2040"/>
+                <TextBlock Text="Add, update, search, and maintain the retail catalog with SKU validation." FontSize="13" Foreground="#64748B" Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Content="↻ Refresh" Style="{StaticResource SecondaryButton}" Command="{Binding RefreshCommand}" Margin="0,0,10,0"/>
+                <Button Content="+ Add New Product" Style="{StaticResource EmeraldButton}" Command="{Binding AddProductCommand}" FontWeight="Bold"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Search & Filter Bar -->
+        <Border Grid.Row="1" Style="{StaticResource ModernCard}" Margin="0,0,0,16" Padding="14,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="280"/>
+                    <ColumnDefinition Width="180"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Search Box -->
+                <TextBox Grid.Column="0" Height="36" Padding="10,6" FontSize="13" BorderBrush="#CBD5E1" Background="White"
+                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                         ToolTip="Search by SKU, Product Name, or Barcode"
+                         Margin="0,0,12,0"/>
+
+                <!-- Category Dropdown -->
+                <ComboBox Grid.Column="1" Height="36" FontSize="13" BorderBrush="#CBD5E1" Background="White"
+                          ItemsSource="{Binding Categories}"
+                          SelectedItem="{Binding SelectedCategory}"
+                          Margin="0,0,12,0"/>
+
+                <!-- Active Only Filter -->
+                <CheckBox Grid.Column="2" Content="Active Only" IsChecked="{Binding ActiveOnly}" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,16,0"/>
+
+                <!-- Clear Filters -->
+                <Button Grid.Column="3" Content="Reset Filter" Style="{StaticResource SecondaryButton}" Command="{Binding ClearFilterCommand}" Height="36" Padding="12,0"/>
+
+                <!-- Action buttons for selected item -->
+                <StackPanel Grid.Column="5" Orientation="Horizontal">
+                    <Button Content="✎ Edit Product" Style="{StaticResource PrimaryButton}" Command="{Binding EditProductCommand}" Height="36" Margin="0,0,8,0"/>
+                    <Button Content="🗑 Delete / Deactivate" Style="{StaticResource SecondaryButton}" Command="{Binding DeleteProductCommand}" Height="36"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Product Table -->
+        <Border Grid.Row="2" Style="{StaticResource ModernCard}" Padding="0">
+            <DataGrid ItemsSource="{Binding Products}" SelectedItem="{Binding SelectedProduct}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="SKU / CODE" Binding="{Binding Sku}" Width="100"/>
+                    <DataGridTextColumn Header="BARCODE" Binding="{Binding Barcode}" Width="110"/>
+                    <DataGridTextColumn Header="PRODUCT NAME" Binding="{Binding Name}" Width="*"/>
+                    <DataGridTextColumn Header="CATEGORY" Binding="{Binding Category}" Width="130"/>
+                    <DataGridTextColumn Header="COST PRICE" Binding="{Binding CostPrice, Converter={StaticResource CurrencyConverter}}" Width="110"/>
+                    <DataGridTextColumn Header="SELLING PRICE" Binding="{Binding SellingPrice, Converter={StaticResource CurrencyConverter}}" Width="110"/>
+                    <DataGridTextColumn Header="STOCK" Binding="{Binding CurrentStock}" Width="75"/>
+                    <DataGridTextColumn Header="REORDER" Binding="{Binding ReorderLevel}" Width="75"/>
+                    <DataGridTextColumn Header="UNIT" Binding="{Binding Unit}" Width="70"/>
+                    <DataGridTemplateColumn Header="STOCK STATUS" Width="120">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border Background="{Binding StockStatus, Converter={StaticResource StockStatusBadgeBgConverter}}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding StockStatus}" Foreground="{Binding StockStatus, Converter={StaticResource StockStatusColorConverter}}" FontWeight="Bold" FontSize="11"/>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="STATUS" Width="90">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock x:Name="TxtStatus" Text="Active" Foreground="#10B981" FontWeight="SemiBold" FontSize="11" HorizontalAlignment="Center"/>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                        <Setter TargetName="TxtStatus" Property="Text" Value="Inactive"/>
+                                        <Setter TargetName="TxtStatus" Property="Foreground" Value="#94A3B8"/>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <!-- Status / Counter Footer -->
+        <Border Grid.Row="3" Margin="0,10,0,0">
+            <Grid>
+                <TextBlock Text="{Binding TotalItemsCount, StringFormat='Showing {0} products'}" FontSize="12" Foreground="#64748B" VerticalAlignment="Center"/>
+                <TextBlock Text="Double-click or select a row and click 'Edit Product' to modify." FontSize="12" Foreground="#94A3B8" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
